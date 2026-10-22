@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>php2shell-scan · státusz</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg">
+<link rel="stylesheet" href="app.css">
+<script src="theme.js"></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M8 11l5 5-5 5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="22" x2="24" y2="22" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </span>
+    php2shell-scan <small>· státusz</small>
+  </div>
+  <div class="hgroup">
+    <a class="btn" href="/">← scanner</a>
+    <button class="icon-btn" id="themebtn" title="Téma" aria-label="Téma">◐</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <p class="eyebrow">Használati statisztika</p>
+    <h1>Státusz</h1>
+    <p class="sub">A háttér-használati naplóból – ki (vizsgáló IP) mely célpontot vizsgálta. Üzemeltetői nézet, nem publikus.</p>
+  </section>
+
+  <div class="note" id="note" hidden></div>
+
+  <div class="stats" id="tiles"></div>
+
+  <div class="card">
+    <h2 style="margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)">Top célpontok</h2>
+    <div id="targets"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)">Top vizsgáló IP-k</h2>
+    <div id="ips"></div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)">Legutóbbi vizsgálatok</h2>
+    <div id="recent"></div>
+  </div>
+</main>
+
+<script src="status.js"></script>
+</body>
+</html>

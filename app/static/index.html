@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>php2shell-scan</title>
+<meta name="description" content="Publikus, verzió-alapú PHP php2shell CVE-szkenner – nem kihasználás. sadrobot.">
+<meta name="robots" content="noindex">
+<link rel="icon" href="favicon.svg?v=__VER__">
+<link rel="stylesheet" href="app.css?v=__VER__">
+<script src="theme.js?v=__VER__"></script>
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="mark" aria-hidden="true">
+      <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M8 11l5 5-5 5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="22" x2="24" y2="22" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+    </span>
+    php2shell-scan <small>· sadrobot</small>
+  </div>
+  <div class="hgroup">
+    <div class="seg" id="lang">
+      <button data-lang="hu">HU</button><button data-lang="en">EN</button>
+    </div>
+    <button class="icon-btn" id="themebtn" title="Téma" aria-label="Téma">◐</button>
+  </div>
+</header>
+
+<main>
+  <section>
+    <p class="eyebrow" data-t="eyebrow"></p>
+    <h1 data-t="tagline"></h1>
+    <p class="sub" id="lead" data-t="lead"></p>
+  </section>
+
+  <div class="about">
+    <div class="about-col">
+      <h3 data-t="about_what"></h3>
+      <p data-t="about_what_body"></p>
+    </div>
+    <div class="about-col danger">
+      <h3 data-t="about_why"></h3>
+      <p data-t="about_why_body"></p>
+    </div>
+  </div>
+
+  <div class="note warn" id="authnote">
+    <b data-t="authorized"></b> <span data-t="authorized_note"></span>
+  </div>
+
+  <div class="card search">
+    <form class="searchbar" id="form" autocomplete="off">
+      <input type="text" id="target" inputmode="url" spellcheck="false" data-ph="placeholder" required>
+      <button type="submit" class="go" id="go" data-t="scan"></button>
+    </form>
+    <label class="chk" title="">
+      <input type="checkbox" id="extended">
+      <span data-t="extended"></span>
+    </label>
+    <p class="hint" id="exthint" data-t="extended_hint"></p>
+  </div>
+
+  <div id="status" class="prog" hidden>
+    <div class="progbar indet"><i></i></div>
+    <div class="progmeta"><span data-t="scanning"></span><span id="statustarget"></span></div>
+  </div>
+
+  <div id="error" class="note err" hidden></div>
+
+  <section id="result" hidden></section>
+
+  <p class="foot" id="foot"></p>
+</main>
+
+<script src="i18n.js?v=__VER__"></script>
+<script src="app.js?v=__VER__"></script>
+</body>
+</html>

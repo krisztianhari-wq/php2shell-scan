@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+.DS_Store
+data/
+*.log
+*.jsonl
+app/BUILD
+.claude/
+CLAUDE.local.md
