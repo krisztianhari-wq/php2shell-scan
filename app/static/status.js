@@ -86,7 +86,7 @@ function rows(list, cols) {
   const head = `<tr>${cols.map((c) => `<th${c.num ? ' class="num"' : ""}>${esc(c.h)}</th>`).join("")}</tr>`;
   const body = list.map((r) =>
     `<tr>${cols.map((c) => `<td${c.num ? ' class="num"' : ""}>${c.html ? c.html(r) : esc(c.get(r))}</td>`).join("")}</tr>`).join("");
-  return `<table class="table">${head}${body}</table>`;
+  return `<div class="table-wrap"><table class="table">${head}${body}</table></div>`;
 }
 
 function sevBadges(r) {

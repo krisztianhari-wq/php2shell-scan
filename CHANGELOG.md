@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 — 2026-10-23
+- Fix: status page tables overflowed horizontally on mobile (long CVE ids, monospace) — tables are now
+  in a scrollable wrapper, and CVE ids wrap on narrow screens. No more horizontal page scroll.
+
 ## 0.4.0 — 2026-10-23
 - Scheduled re-check (opt-in, PHP2SHELL_RECHECK=1): every 6h (PHP2SHELL_RECHECK_HOURS) it re-scans the
   targets that have had a finding, and tracks where the finding disappeared (fixed). A fixed target is
