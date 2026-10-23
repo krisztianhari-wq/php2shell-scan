@@ -78,8 +78,9 @@ def summary() -> dict:
             sevs[s] += 1
         recent.append(e)
 
-    out["top_targets"] = [{"target": k, "n": v} for k, v in targets.most_common(15)]
-    out["top_ips"] = [{"ip": k, "n": v} for k, v in ips.most_common(15)]
+    out["top_targets"] = [{"target": k, "n": v} for k, v in targets.most_common(20)]
+    out["top_ips"] = [{"ip": k, "n": v} for k, v in ips.most_common(20)]
     out["sev"] = dict(sevs)
-    out["recent"] = list(reversed(recent[-40:]))
+    # minden vizsgálat elérhető (legújabb elöl); felső korlát a JSON mérete miatt
+    out["recent"] = list(reversed(recent))[:3000]
     return out

@@ -99,6 +99,21 @@ h1{margin:0;font-size:clamp(24px,5vw,30px);font-weight:700;letter-spacing:-.01em
 .stat b{color:var(--ink-3);font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;font-weight:600}
 .stat span{font-size:26px;font-weight:600;line-height:1.15}
 .stat.accent span{color:var(--accent)}.stat.bad span{color:var(--bad)}.stat.good span{color:var(--good)}
+.stat.clickable{cursor:pointer;transition:border-color .12s,background .12s}
+.stat.clickable:hover{border-color:var(--bad)}
+.stat.clickable.active{border-color:var(--bad);background:var(--bad-bg)}
+.stat.clickable::after{content:"▸";position:absolute;top:10px;right:12px;font-size:11px;color:var(--ink-3)}
+.stat{position:relative}
+.cardh{margin:0;font-size:13px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.count{font:12px var(--mono);color:var(--ink-3)}
+.muted{color:var(--ink-3)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.filter{flex:1;min-width:180px;font:13px var(--mono);padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--panel-2);color:var(--ink)}
+.filter:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.pills{display:inline-flex;gap:3px;padding:3px;background:var(--panel-2);border:1px solid var(--line);border-radius:9px}
+.pills button{font:600 11.5px var(--mono);letter-spacing:.03em;padding:6px 11px;border:0;border-radius:6px;background:transparent;color:var(--ink-3);cursor:pointer}
+.pills button:hover{color:var(--ink)}.pills button.on{background:var(--accent-soft);color:var(--accent)}
+.table td .badge{display:inline-block;margin:1px 2px}
 .table{width:100%;border-collapse:collapse;font:13px var(--mono)}
 .table th,.table td{text-align:left;padding:8px 10px;border-top:1px solid var(--line-2)}
 .table th{color:var(--ink-3);font-weight:600;font-size:11.5px;letter-spacing:.06em;text-transform:uppercase}

@@ -43,6 +43,11 @@ def record(client_ip: str, target: str, extended: bool, findings: list[dict],
     if path is None:
         return
     sevs = sorted({f.get("severity", "info") for f in findings})
+    # a konkrét találatok rövid listája (CVE + súlyosság + kétnyelvű cím), hogy a status oldalon
+    # a kritikus jelzésnél látszódjanak a tényleges találatok. CVE-azonosító nem személyes adat.
+    finds = [{"cve": f.get("cve", ""), "sev": f.get("severity", "info"),
+              "title": f.get("title", ""), "title_en": f.get("title_en", f.get("title", ""))}
+             for f in findings][:12]
     entry = {
         "ts": _dt.datetime.now(_dt.timezone.utc).isoformat(timespec="seconds"),
         "ip": _client_ip(client_ip or "-"),
@@ -51,6 +56,7 @@ def record(client_ip: str, target: str, extended: bool, findings: list[dict],
         "resolved": bool(resolved),
         "n": len(findings),
         "sev": sevs,
+        "finds": finds,
     }
     try:
         with _LOCK:

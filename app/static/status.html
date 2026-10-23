@@ -15,19 +15,20 @@
     <span class="mark" aria-hidden="true">
       <svg width="22" height="22" viewBox="0 0 32 32" fill="none"><path d="M8 11l5 5-5 5" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><line x1="16" y1="22" x2="24" y2="22" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
     </span>
-    php2shell-scan <small>· státusz</small>
+    php2shell-scan <small>· <span data-t="status"></span></small>
   </div>
   <div class="hgroup">
-    <a class="btn" href="/">← scanner</a>
-    <button class="icon-btn" id="themebtn" title="Téma" aria-label="Téma">◐</button>
+    <a class="btn" href="/" data-t="back_scanner"></a>
+    <div class="seg" id="lang"><button data-lang="hu">HU</button><button data-lang="en">EN</button></div>
+    <button class="icon-btn" id="themebtn" title="Theme" aria-label="Theme">◐</button>
   </div>
 </header>
 
 <main>
   <section>
-    <p class="eyebrow">Használati statisztika</p>
-    <h1>Státusz</h1>
-    <p class="sub">A háttér-használati naplóból – ki (vizsgáló IP) mely célpontot vizsgálta. Üzemeltetői nézet, nem publikus.</p>
+    <p class="eyebrow" data-t="eyebrow"></p>
+    <h1 data-t="status"></h1>
+    <p class="sub" data-t="lead"></p>
   </section>
 
   <div class="note" id="note" hidden></div>
@@ -35,18 +36,29 @@
   <div class="stats" id="tiles"></div>
 
   <div class="card">
-    <h2 style="margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)">Top célpontok</h2>
+    <h2 class="cardh" data-t="top_targets"></h2>
     <div id="targets"></div>
   </div>
 
   <div class="card">
-    <h2 style="margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)">Top vizsgáló IP-k</h2>
+    <h2 class="cardh" data-t="top_ips"></h2>
     <div id="ips"></div>
   </div>
 
   <div class="card">
-    <h2 style="margin:0;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)">Legutóbbi vizsgálatok</h2>
-    <div id="recent"></div>
+    <div class="row">
+      <h2 class="cardh" data-t="all_scans"></h2>
+      <span class="count" id="scancount"></span>
+    </div>
+    <div class="toolbar">
+      <input type="text" class="filter" id="filter" autocomplete="off">
+      <div class="pills" id="pills">
+        <button data-f="all" class="on" data-t="f_all"></button>
+        <button data-f="hits" data-t="f_hits"></button>
+        <button data-f="critical" data-t="f_critical"></button>
+      </div>
+    </div>
+    <div id="scans"></div>
   </div>
 </main>
 
