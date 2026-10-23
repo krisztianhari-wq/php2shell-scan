@@ -74,10 +74,11 @@ function rows(list, cols) {
 function findingsCell(r) {
   if (!r.n) return `<span class="muted">${t("no_find")}</span>`;
   if (r.finds && r.finds.length) {
-    return r.finds.map((f) =>
-      `<span class="badge ${esc(f.sev || "info")}" title="${esc(f.cve)}">${esc(findTitle(f) || f.cve)}</span>`).join(" ");
+    return `<div class="findlist">` + r.finds.map((f) =>
+      `<div class="findrow"><span class="badge ${esc(f.sev || "info")}">${esc(findTitle(f) || f.cve)}</span>` +
+      `<span class="findcve">${esc(f.cve)}</span></div>`).join("") + `</div>`;
   }
-  // régi bejegyzés: csak a súlyosságok ismertek
+  // régi bejegyzés (v0.2.0 előtt): a konkrét CVE nincs naplózva, csak a súlyosságok
   return (r.sev || []).map((s) => `<span class="badge ${esc(s)}">${esc(s)}</span>`).join(" ");
 }
 

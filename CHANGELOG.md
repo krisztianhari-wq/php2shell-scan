@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 — 2026-10-23
+- Status page: each finding now shows the exact CVE id next to the title (not only on hover),
+  so you can see which CVE the scan matched.
+
 ## 0.2.1 — 2026-10-23
 - Fix: the status page loaded its JS/CSS without a version query, so browsers kept serving the old
   `status.js` (language switch and new log view appeared but did nothing). Assets are now versioned
