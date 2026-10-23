@@ -139,19 +139,21 @@ async def api_stats(request: Request):
     return JSONResponse(stats.summary())
 
 
+_NOCACHE = {"Cache-Control": "no-cache, no-store, must-revalidate"}
+_INDEX = (STATIC / "index.html").read_text(encoding="utf-8").replace("__VER__", __version__)
+_STATUS = (STATIC / "status.html").read_text(encoding="utf-8").replace("__VER__", __version__)
+
+
 @app.get("/status")
 async def status_page(request: Request):
     if not _status_ok(request):
         return PlainTextResponse("unauthorized", status_code=401)
-    return FileResponse(STATIC / "status.html")
-
-
-_INDEX = (STATIC / "index.html").read_text(encoding="utf-8").replace("__VER__", __version__)
+    return Response(_STATUS, media_type="text/html; charset=utf-8", headers=_NOCACHE)
 
 
 @app.get("/")
 async def index():
-    return Response(_INDEX, media_type="text/html; charset=utf-8")
+    return Response(_INDEX, media_type="text/html; charset=utf-8", headers=_NOCACHE)
 
 
 app.mount("/", StaticFiles(directory=str(STATIC)), name="static")

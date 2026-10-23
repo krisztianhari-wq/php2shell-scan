@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 — 2026-10-23
+- Fix: the status page loaded its JS/CSS without a version query, so browsers kept serving the old
+  `status.js` (language switch and new log view appeared but did nothing). Assets are now versioned
+  (`?v=<version>`) and the `/status` and `/` HTML is served with `no-cache`.
+
 ## 0.2.0 — 2026-10-23
 - Status page: full scan log — every scan is listed (not just the last 40), with a text filter
   (domain / IP) and All / With-findings / Critical pills.
