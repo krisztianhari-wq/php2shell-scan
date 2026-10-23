@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.3.0 — 2026-10-23
+- Scanner page: added a "limits" notice — this is a version-based indicator, not a full assessment
+  ("no finding" ≠ safe; no exploitation, to avoid stressing the target) — and a collapsible
+  "precise, local verification" guide (php -v / php-fpm -v, distro backport changelogs, compare to
+  fixed releases, on-host authenticated check). Bilingual (HU/EN).
+
 ## 0.2.4 — 2026-10-23
 - Status page: shows re-scanned findings. Pre-0.2.0 extended hits (where the exact CVE wasn't logged)
   were re-scanned; the matched CVEs are now in the log, marked ⟳ (with date tooltip). Entries that are

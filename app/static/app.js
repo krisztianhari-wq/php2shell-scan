@@ -13,6 +13,8 @@ function fe(f) { return LANG === "en" ? (f.evidence_en || f.evidence) : f.eviden
 function applyI18n() {
   document.documentElement.lang = LANG;
   document.querySelectorAll("[data-t]").forEach((el) => { el.textContent = t(el.dataset.t); });
+  // data-html: fix, megbízható fordítás-sztringek, amelyek <b>/<code> jelölést tartalmaznak (nem user-input)
+  document.querySelectorAll("[data-html]").forEach((el) => { el.innerHTML = t(el.dataset.html); });
   document.querySelectorAll("[data-ph]").forEach((el) => { el.placeholder = t(el.dataset.ph); });
   document.getElementById("foot").textContent = t("not_exploit") + " " + t("footer_note");
   document.querySelectorAll("#lang button").forEach((b) => b.classList.toggle("on", b.dataset.lang === LANG));
