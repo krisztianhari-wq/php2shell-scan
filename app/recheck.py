@@ -19,8 +19,17 @@ from pathlib import Path
 
 from . import scanner
 
-HOURS = max(1, int(os.environ.get("PHP2SHELL_RECHECK_HOURS", "6") or "6"))
 ENABLED = os.environ.get("PHP2SHELL_RECHECK", "").lower() in ("1", "on", "true", "yes")
+# Intervallum: PHP2SHELL_RECHECK_MINUTES dominál; különben a (régi) PHP2SHELL_RECHECK_HOURS * 60; alap 60 perc.
+_MIN_ENV = os.environ.get("PHP2SHELL_RECHECK_MINUTES", "")
+_HOURS_ENV = os.environ.get("PHP2SHELL_RECHECK_HOURS", "")
+if _MIN_ENV.strip():
+    INTERVAL_MIN = max(5, int(_MIN_ENV))
+elif _HOURS_ENV.strip():
+    INTERVAL_MIN = max(5, int(float(_HOURS_ENV) * 60))
+else:
+    INTERVAL_MIN = 60
+HOURS = INTERVAL_MIN / 60.0   # visszafelé kompatibilis (a summary/őrláb ezt is közli)
 _CONCURRENCY = 4
 
 
@@ -85,7 +94,7 @@ def seconds_until_due(st: dict | None = None) -> float:
         t = _dt.datetime.fromisoformat(last)
     except ValueError:
         return 0.0
-    due = t + _dt.timedelta(hours=HOURS)
+    due = t + _dt.timedelta(minutes=INTERVAL_MIN)
     return max(0.0, (due - _dt.datetime.now(_dt.timezone.utc)).total_seconds())
 
 
@@ -105,29 +114,40 @@ async def run_once() -> dict:
         if tgt not in targets:
             targets[tgt] = {"first_seen": now, "status": "vulnerable", "findings": [],
                             "checks": 0, "last_check": None, "fixed_at": None}
-    active = [t for t, d in targets.items() if d.get("status") == "vulnerable"]
+    # a már javult (fixed) célpontokat békén hagyjuk; a sebezhetőket ÉS a (még figyelt) elérhetetleneket nézzük
+    active = [t for t, d in targets.items() if d.get("status") in ("vulnerable", "unreachable")]
     sem = asyncio.Semaphore(_CONCURRENCY)
 
     async def one(tgt: str):
         async with sem:
             try:
                 r = await scanner.scan(tgt, extended=True)
-                return tgt, r.get("findings", []), bool(r.get("resolved"))
+                return tgt, r.get("findings", []), bool(r.get("resolved")), bool(r.get("ports"))
             except Exception:  # noqa: BLE001
-                return tgt, None, False
+                return tgt, None, False, False
 
-    for tgt, findings, resolved in await asyncio.gather(*(one(t) for t in active)):
+    for tgt, findings, resolved, responded in await asyncio.gather(*(one(t) for t in active)):
         d = targets[tgt]
         d["last_check"] = now
         d["checks"] = d.get("checks", 0) + 1
-        if findings is None:
-            continue                      # hiba/elérhetetlen: hagyjuk aktívnak, később újra
         if findings:
+            # még/újra sebezhető
             d["status"] = "vulnerable"
             d["findings"] = _finds(findings)
-        else:
-            d["status"] = "fixed"         # eltűnt a találat → javítva, és NEM próbáljuk újra
+            d["misses"] = 0
+            d["unreachable_at"] = None
+        elif findings is not None and resolved and responded:
+            # feloldódik ÉS válaszol, de nincs találat → javítva (és NEM próbáljuk újra)
+            d["status"] = "fixed"
             d["fixed_at"] = now
+            d["misses"] = 0
+            d["unreachable_at"] = None
+        else:
+            # nem oldódik fel / nem válaszol / belső hiba → elérhetetlen (tovább figyeljük, hátha visszajön)
+            d["status"] = "unreachable"
+            d["misses"] = d.get("misses", 0) + 1
+            if not d.get("unreachable_at"):
+                d["unreachable_at"] = now
     st["last_run"] = now
     st["generated"] = now
     save_state(st)
@@ -137,19 +157,25 @@ async def run_once() -> dict:
 def summary(st: dict | None = None) -> dict:
     st = st if st is not None else load_state()
     targets = st.get("targets", {})
-    watched, fixed = [], []
+    watched, fixed, unreachable = [], [], []
     for t, d in targets.items():
-        if d.get("status") == "fixed":
+        s = d.get("status")
+        if s == "fixed":
             fixed.append({"target": t, "fixed_at": d.get("fixed_at"),
                           "findings": d.get("findings", []), "checks": d.get("checks", 0)})
+        elif s == "unreachable":
+            unreachable.append({"target": t, "findings": d.get("findings", []),
+                                "unreachable_at": d.get("unreachable_at"), "misses": d.get("misses", 0),
+                                "last_check": d.get("last_check")})
         else:
             watched.append({"target": t, "findings": d.get("findings", []),
                             "last_check": d.get("last_check"), "checks": d.get("checks", 0)})
     fixed.sort(key=lambda x: x.get("fixed_at") or "", reverse=True)
+    unreachable.sort(key=lambda x: x.get("unreachable_at") or "", reverse=True)
     watched.sort(key=lambda x: x.get("target") or "")
-    return {"enabled": ENABLED, "hours": HOURS, "last_run": st.get("last_run"),
-            "watched": len(watched), "fixed": len(fixed),
-            "watched_list": watched, "fixed_list": fixed}
+    return {"enabled": ENABLED, "hours": HOURS, "interval_min": INTERVAL_MIN, "last_run": st.get("last_run"),
+            "watched": len(watched), "fixed": len(fixed), "unreachable": len(unreachable),
+            "watched_list": watched, "fixed_list": fixed, "unreachable_list": unreachable}
 
 
 async def loop() -> None:
@@ -163,4 +189,4 @@ async def loop() -> None:
             await run_once()
         except Exception:  # noqa: BLE001
             pass
-        await asyncio.sleep(HOURS * 3600)
+        await asyncio.sleep(INTERVAL_MIN * 60)

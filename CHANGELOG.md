@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.5.0 — 2026-10-23
+- Re-check: configurable interval in minutes (`PHP2SHELL_RECHECK_MINUTES`, default 60; the old
+  `PHP2SHELL_RECHECK_HOURS` still works) — re-checks more often than the previous fixed 6h.
+- Re-check: new "unreachable" state — a watched target that no longer resolves or no longer responds
+  (not the same as "fixed", which responds but has no finding). Tracked with a first-unreachable
+  timestamp and a miss counter, and kept under watch in case it comes back.
+- Status page: an "Unreachable" tile and a dedicated section (target, unreachable-since, miss count,
+  last known findings), next to Fixed/gone and Watched.
+
 ## 0.4.1 — 2026-10-23
 - Fix: status page tables overflowed horizontally on mobile (long CVE ids, monospace) — tables are now
   in a scrollable wrapper, and CVE ids wrap on narrow screens. No more horizontal page scroll.

@@ -6,12 +6,14 @@ const STATUS_I18N = {
     eyebrow: "Használati statisztika",
     lead: "A háttér-használati naplóból – ki (vizsgáló IP) mely célpontot vizsgálta. Üzemeltetői nézet, nem publikus.",
     t_total: "Összes vizsgálat", t_today: "Ma", t_hits: "Találatos", t_ext: "Bővített",
-    t_unres: "Feloldatlan", t_crit: "Kritikus jelzés", t_fixed: "Javítva (eltűnt)",
+    t_unres: "Feloldatlan", t_crit: "Kritikus jelzés", t_fixed: "Javítva (eltűnt)", t_unreach: "Elérhetetlen",
     recheck_title: "Időzített újraellenőrzés", recheck_off: "Az időzített újraellenőrzés ki van kapcsolva.",
-    rc_every: (h) => `${h} óránként`, rc_last: "utolsó futás:", rc_never: "még nem futott",
-    rc_fixed_h: "Javítva / eltűnt", rc_watched_h: "Figyelt – még sebezhető",
-    rc_gone_when: "Eltűnt", rc_lastcheck: "Utolsó ellenőrzés", rc_none_fixed: "még nincs javított találat",
-    rc_none_watched: "nincs figyelt (sebezhető) célpont",
+    rc_every_min: (m) => `${m} percenként`, rc_every_h: (h) => `${h} óránként`,
+    rc_last: "utolsó futás:", rc_never: "még nem futott",
+    rc_fixed_h: "Javítva / eltűnt", rc_watched_h: "Figyelt – még sebezhető", rc_unreach_h: "Elérhetetlen (nem válaszol)",
+    rc_gone_when: "Eltűnt", rc_unreach_when: "Elérhetetlen ekkortól", rc_misses: "kihagyás",
+    rc_lastcheck: "Utolsó ellenőrzés", rc_none_fixed: "még nincs javított találat",
+    rc_none_watched: "nincs figyelt (sebezhető) célpont", rc_none_unreach: "nincs elérhetetlen célpont",
     top_targets: "Top célpontok", top_ips: "Top vizsgáló IP-k", all_scans: "Összes vizsgálat",
     c_target: "Célpont", c_ip: "Vizsgáló IP", c_count: "db", c_time: "Időpont (UTC)",
     c_ext: "Ext", c_findings: "Találatok",
@@ -31,12 +33,14 @@ const STATUS_I18N = {
     eyebrow: "Usage statistics",
     lead: "From the background usage log – who (scanner IP) scanned which target. Operator view, not public.",
     t_total: "Total scans", t_today: "Today", t_hits: "With findings", t_ext: "Extended",
-    t_unres: "Unresolved", t_crit: "Critical flags", t_fixed: "Fixed (gone)",
+    t_unres: "Unresolved", t_crit: "Critical flags", t_fixed: "Fixed (gone)", t_unreach: "Unreachable",
     recheck_title: "Scheduled re-check", recheck_off: "Scheduled re-check is off.",
-    rc_every: (h) => `every ${h}h`, rc_last: "last run:", rc_never: "not run yet",
-    rc_fixed_h: "Fixed / gone", rc_watched_h: "Watched – still vulnerable",
-    rc_gone_when: "Gone since", rc_lastcheck: "Last check", rc_none_fixed: "no fixed findings yet",
-    rc_none_watched: "no watched (vulnerable) targets",
+    rc_every_min: (m) => `every ${m} min`, rc_every_h: (h) => `every ${h}h`,
+    rc_last: "last run:", rc_never: "not run yet",
+    rc_fixed_h: "Fixed / gone", rc_watched_h: "Watched – still vulnerable", rc_unreach_h: "Unreachable (no response)",
+    rc_gone_when: "Gone since", rc_unreach_when: "Unreachable since", rc_misses: "misses",
+    rc_lastcheck: "Last check", rc_none_fixed: "no fixed findings yet",
+    rc_none_watched: "no watched (vulnerable) targets", rc_none_unreach: "no unreachable targets",
     top_targets: "Top targets", top_ips: "Top scanner IPs", all_scans: "All scans",
     c_target: "Target", c_ip: "Scanner IP", c_count: "n", c_time: "Time (UTC)",
     c_ext: "Ext", c_findings: "Findings",
@@ -132,7 +136,8 @@ function render() {
     tile(t("t_ext"), d.extended) +
     tile(t("t_unres"), d.unresolved) +
     tile(t("t_crit"), crit, "bad clickable" + (MODE === "critical" ? " active" : ""), 'id="crittile"') +
-    (d.recheck && d.recheck.enabled ? tile(t("t_fixed"), d.recheck.fixed, "good") : "");
+    (d.recheck && d.recheck.enabled ? tile(t("t_fixed"), d.recheck.fixed, "good") : "") +
+    (d.recheck && d.recheck.enabled ? tile(t("t_unreach"), d.recheck.unreachable || 0, "warn") : "");
 
   const ct = document.getElementById("crittile");
   if (ct) ct.addEventListener("click", () => { setMode(MODE === "critical" ? "all" : "critical"); });
@@ -176,7 +181,9 @@ function renderRecheck(rc) {
     return;
   }
   const last = rc.last_run ? (rc.last_run.replace("T", " ").replace("+00:00", "") + " UTC") : t("rc_never");
-  meta.textContent = t("rc_every")(rc.hours) + " · " + t("rc_last") + " " + last;
+  const every = (rc.interval_min && rc.interval_min < 60) ? t("rc_every_min")(rc.interval_min)
+    : t("rc_every_h")(Math.round(rc.hours || 1));
+  meta.textContent = every + " · " + t("rc_last") + " " + last;
 
   const fixed = rows(rc.fixed_list,
     [{ h: t("c_target"), get: (r) => r.target },
@@ -186,10 +193,17 @@ function renderRecheck(rc) {
     [{ h: t("c_target"), get: (r) => r.target },
      { h: t("c_findings"), html: (r) => cveBadges(r.findings) },
      { h: t("rc_lastcheck"), get: (r) => (r.last_check || "").replace("T", " ").replace("+00:00", "") }]);
+  const unreach = rows(rc.unreachable_list,
+    [{ h: t("c_target"), get: (r) => r.target },
+     { h: t("rc_unreach_when"), get: (r) => (r.unreachable_at || "").replace("T", " ").replace("+00:00", "") },
+     { h: t("rc_misses"), num: true, get: (r) => r.misses },
+     { h: t("c_findings"), html: (r) => cveBadges(r.findings) || `<span class="muted">${t("no_find")}</span>` }]);
 
   body.innerHTML =
     `<h3 class="subh good">✓ ${esc(t("rc_fixed_h"))} (${rc.fixed})</h3>` +
     (rc.fixed_list && rc.fixed_list.length ? fixed : `<p class="sub">${t("rc_none_fixed")}</p>`) +
+    `<h3 class="subh warn">⦸ ${esc(t("rc_unreach_h"))} (${rc.unreachable || 0})</h3>` +
+    (rc.unreachable_list && rc.unreachable_list.length ? unreach : `<p class="sub">${t("rc_none_unreach")}</p>`) +
     `<h3 class="subh bad">⚠ ${esc(t("rc_watched_h"))} (${rc.watched})</h3>` +
     (rc.watched_list && rc.watched_list.length ? watched : `<p class="sub">${t("rc_none_watched")}</p>`);
 }
