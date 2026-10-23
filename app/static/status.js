@@ -6,7 +6,12 @@ const STATUS_I18N = {
     eyebrow: "Használati statisztika",
     lead: "A háttér-használati naplóból – ki (vizsgáló IP) mely célpontot vizsgálta. Üzemeltetői nézet, nem publikus.",
     t_total: "Összes vizsgálat", t_today: "Ma", t_hits: "Találatos", t_ext: "Bővített",
-    t_unres: "Feloldatlan", t_crit: "Kritikus jelzés",
+    t_unres: "Feloldatlan", t_crit: "Kritikus jelzés", t_fixed: "Javítva (eltűnt)",
+    recheck_title: "Időzített újraellenőrzés", recheck_off: "Az időzített újraellenőrzés ki van kapcsolva.",
+    rc_every: (h) => `${h} óránként`, rc_last: "utolsó futás:", rc_never: "még nem futott",
+    rc_fixed_h: "Javítva / eltűnt", rc_watched_h: "Figyelt – még sebezhető",
+    rc_gone_when: "Eltűnt", rc_lastcheck: "Utolsó ellenőrzés", rc_none_fixed: "még nincs javított találat",
+    rc_none_watched: "nincs figyelt (sebezhető) célpont",
     top_targets: "Top célpontok", top_ips: "Top vizsgáló IP-k", all_scans: "Összes vizsgálat",
     c_target: "Célpont", c_ip: "Vizsgáló IP", c_count: "db", c_time: "Időpont (UTC)",
     c_ext: "Ext", c_findings: "Találatok",
@@ -26,7 +31,12 @@ const STATUS_I18N = {
     eyebrow: "Usage statistics",
     lead: "From the background usage log – who (scanner IP) scanned which target. Operator view, not public.",
     t_total: "Total scans", t_today: "Today", t_hits: "With findings", t_ext: "Extended",
-    t_unres: "Unresolved", t_crit: "Critical flags",
+    t_unres: "Unresolved", t_crit: "Critical flags", t_fixed: "Fixed (gone)",
+    recheck_title: "Scheduled re-check", recheck_off: "Scheduled re-check is off.",
+    rc_every: (h) => `every ${h}h`, rc_last: "last run:", rc_never: "not run yet",
+    rc_fixed_h: "Fixed / gone", rc_watched_h: "Watched – still vulnerable",
+    rc_gone_when: "Gone since", rc_lastcheck: "Last check", rc_none_fixed: "no fixed findings yet",
+    rc_none_watched: "no watched (vulnerable) targets",
     top_targets: "Top targets", top_ips: "Top scanner IPs", all_scans: "All scans",
     c_target: "Target", c_ip: "Scanner IP", c_count: "n", c_time: "Time (UTC)",
     c_ext: "Ext", c_findings: "Findings",
@@ -121,10 +131,13 @@ function render() {
     tile(t("t_hits"), d.with_findings + " (" + hitRate + "%)", d.with_findings ? "bad" : "good") +
     tile(t("t_ext"), d.extended) +
     tile(t("t_unres"), d.unresolved) +
-    tile(t("t_crit"), crit, "bad clickable" + (MODE === "critical" ? " active" : ""), 'id="crittile"');
+    tile(t("t_crit"), crit, "bad clickable" + (MODE === "critical" ? " active" : ""), 'id="crittile"') +
+    (d.recheck && d.recheck.enabled ? tile(t("t_fixed"), d.recheck.fixed, "good") : "");
 
   const ct = document.getElementById("crittile");
   if (ct) ct.addEventListener("click", () => { setMode(MODE === "critical" ? "all" : "critical"); });
+
+  renderRecheck(d.recheck);
 
   document.getElementById("targets").innerHTML = rows(d.top_targets,
     [{ h: t("c_target"), get: (r) => r.target }, { h: t("c_count"), num: true, get: (r) => r.n }]);
@@ -140,6 +153,45 @@ function render() {
      { h: t("c_target"), get: (r) => r.target },
      { h: t("c_ext"), get: (r) => (r.extended ? "✓" : "") },
      { h: t("c_findings"), html: findingsCell }]);
+}
+
+function cveBadges(finds) {
+  if (!finds || !finds.length) return "";
+  return `<div class="findlist">` + finds.map((f) =>
+    `<div class="findrow"><span class="badge ${esc(f.sev || "info")}">${esc(findTitle(f) || f.cve)}</span>` +
+    `<span class="findcve">${esc(f.cve)}</span></div>`).join("") + `</div>`;
+}
+
+function renderRecheck(rc) {
+  const card = document.getElementById("recheckcard");
+  if (!card) return;
+  card.hidden = false;
+  const title = document.getElementById("rctitle");
+  const meta = document.getElementById("rcmeta");
+  const body = document.getElementById("recheck");
+  title.textContent = t("recheck_title");
+  if (!rc || !rc.enabled) {
+    meta.textContent = "";
+    body.innerHTML = `<p class="sub">${t("recheck_off")}</p>`;
+    return;
+  }
+  const last = rc.last_run ? (rc.last_run.replace("T", " ").replace("+00:00", "") + " UTC") : t("rc_never");
+  meta.textContent = t("rc_every")(rc.hours) + " · " + t("rc_last") + " " + last;
+
+  const fixed = rows(rc.fixed_list,
+    [{ h: t("c_target"), get: (r) => r.target },
+     { h: t("rc_gone_when"), get: (r) => (r.fixed_at || "").replace("T", " ").replace("+00:00", "") },
+     { h: t("c_findings"), html: (r) => cveBadges(r.findings) || `<span class="muted">${t("no_find")}</span>` }]);
+  const watched = rows(rc.watched_list,
+    [{ h: t("c_target"), get: (r) => r.target },
+     { h: t("c_findings"), html: (r) => cveBadges(r.findings) },
+     { h: t("rc_lastcheck"), get: (r) => (r.last_check || "").replace("T", " ").replace("+00:00", "") }]);
+
+  body.innerHTML =
+    `<h3 class="subh good">✓ ${esc(t("rc_fixed_h"))} (${rc.fixed})</h3>` +
+    (rc.fixed_list && rc.fixed_list.length ? fixed : `<p class="sub">${t("rc_none_fixed")}</p>`) +
+    `<h3 class="subh bad">⚠ ${esc(t("rc_watched_h"))} (${rc.watched})</h3>` +
+    (rc.watched_list && rc.watched_list.length ? watched : `<p class="sub">${t("rc_none_watched")}</p>`);
 }
 
 function setMode(m) { MODE = m; render(); }

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 — 2026-10-23
+- Scheduled re-check (opt-in, PHP2SHELL_RECHECK=1): every 6h (PHP2SHELL_RECHECK_HOURS) it re-scans the
+  targets that have had a finding, and tracks where the finding disappeared (fixed). A fixed target is
+  dropped from the loop — it is not scanned again. Status page shows a "Fixed (gone)" tile plus a
+  re-check section (fixed/gone targets with date + the CVEs that disappeared, and still-vulnerable
+  watched targets). Default off — the public code does not auto-scan third parties.
+
 ## 0.3.0 — 2026-10-23
 - Scanner page: added a "limits" notice — this is a version-based indicator, not a full assessment
   ("no finding" ≠ safe; no exploitation, to avoid stressing the target) — and a collapsible

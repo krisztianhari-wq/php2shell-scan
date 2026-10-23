@@ -13,13 +13,14 @@ import hmac
 import os
 import time
 from collections import deque
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse, JSONResponse, PlainTextResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 
-from . import __version__, auditlog, scanner, stats
+from . import __version__, auditlog, recheck, scanner, stats
 
 STATIC = Path(__file__).resolve().parent / "static"
 
@@ -30,7 +31,17 @@ TRUST_PROXY = os.environ.get("PHP2SHELL_TRUST_PROXY", "1") == "1"    # Caddy mö
 # A status oldal/statisztika mélységi védelme. Élesben a Caddy passkey-je kapuzza; ez plusz réteg.
 STATUS_TOKEN = os.environ.get("PHP2SHELL_STATUS_TOKEN", "")
 
-app = FastAPI(title="php2shell-scan", version=__version__, docs_url=None, redoc_url=None)
+@asynccontextmanager
+async def lifespan(app: "FastAPI"):
+    task = asyncio.create_task(recheck.loop()) if recheck.ENABLED else None
+    try:
+        yield
+    finally:
+        if task:
+            task.cancel()
+
+
+app = FastAPI(title="php2shell-scan", version=__version__, docs_url=None, redoc_url=None, lifespan=lifespan)
 
 _sem = asyncio.Semaphore(MAX_CONCURRENCY)
 _hits: dict[str, deque] = {}
@@ -136,7 +147,9 @@ def _status_ok(request: Request) -> bool:
 async def api_stats(request: Request):
     if not _status_ok(request):
         return JSONResponse({"error": "unauthorized"}, status_code=401)
-    return JSONResponse(stats.summary())
+    data = stats.summary()
+    data["recheck"] = recheck.summary()
+    return JSONResponse(data)
 
 
 _NOCACHE = {"Cache-Control": "no-cache, no-store, must-revalidate"}
