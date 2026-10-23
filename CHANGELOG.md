@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.3 — 2026-10-23
+- Status page: back-fill the CVE for pre-0.2.0 log entries that predate per-finding CVE logging.
+  In default (non-extended) mode only the php2shell pair can match, so a non-extended critical hit
+  is shown as CVE-2026-109618/109619, marked inferred (≈, with a tooltip). The log file is not
+  rewritten — the inference happens at read time.
+
 ## 0.2.2 — 2026-10-23
 - Status page: each finding now shows the exact CVE id next to the title (not only on hover),
   so you can see which CVE the scan matched.

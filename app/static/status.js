@@ -12,6 +12,7 @@ const STATUS_I18N = {
     c_ext: "Ext", c_findings: "Találatok",
     f_all: "Mind", f_hits: "Találatos", f_critical: "Kritikus",
     filter_ph: "Szűrés domainre vagy IP-re…",
+    inferred: "Következtetett: alap (nem bővített) módban csak a php2shell páros futhat, így a kritikus találat biztosan ez. A régi bejegyzésnél a konkrét CVE még nem volt naplózva.",
     none: "nincs adat", no_find: "–", scans_n: (n, t) => `${n} / ${t} vizsgálat`,
     no_auth: "Nincs jogosultság a statisztikához (token/passkey szükséges).",
     load_err: "A statisztika nem tölthető be.",
@@ -28,6 +29,7 @@ const STATUS_I18N = {
     c_ext: "Ext", c_findings: "Findings",
     f_all: "All", f_hits: "With findings", f_critical: "Critical",
     filter_ph: "Filter by domain or IP…",
+    inferred: "Inferred: in default (non-extended) mode only the php2shell pair can run, so a critical hit is certainly this one. The old entry did not record the exact CVE yet.",
     none: "no data", no_find: "–", scans_n: (n, t) => `${n} / ${t} scans`,
     no_auth: "Not authorized for statistics (token/passkey required).",
     load_err: "Could not load statistics.",
@@ -76,7 +78,8 @@ function findingsCell(r) {
   if (r.finds && r.finds.length) {
     return `<div class="findlist">` + r.finds.map((f) =>
       `<div class="findrow"><span class="badge ${esc(f.sev || "info")}">${esc(findTitle(f) || f.cve)}</span>` +
-      `<span class="findcve">${esc(f.cve)}</span></div>`).join("") + `</div>`;
+      `<span class="findcve"${f.inferred ? ` title="${esc(t("inferred"))}"` : ""}>` +
+      `${f.inferred ? "≈ " : ""}${esc(f.cve)}</span></div>`).join("") + `</div>`;
   }
   // régi bejegyzés (v0.2.0 előtt): a konkrét CVE nincs naplózva, csak a súlyosságok
   return (r.sev || []).map((s) => `<span class="badge ${esc(s)}">${esc(s)}</span>`).join(" ");

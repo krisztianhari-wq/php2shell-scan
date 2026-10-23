@@ -76,6 +76,12 @@ def summary() -> dict:
             ips[e["ip"]] += 1
         for s in (e.get("sev") or []):
             sevs[s] += 1
+        # Visszamenőleges CVE-pótlás a v0.2.0 előtti bejegyzésekhez (akkor még nem naplóztuk a CVE-t).
+        # Alap (nem extended) módban CSAK a php2shell páros futhat, így a nem-extended kritikus
+        # találat biztosan az; megjelöljük következtetettként (a naplófájlt nem írjuk át).
+        if n > 0 and not e.get("finds") and not e.get("extended") and "critical" in (e.get("sev") or []):
+            e["finds"] = [{"cve": "CVE-2026-109618 / CVE-2026-109619", "sev": "critical",
+                           "title": "PHP php2shell RCE", "title_en": "PHP php2shell RCE", "inferred": True}]
         recent.append(e)
 
     out["top_targets"] = [{"target": k, "n": v} for k, v in targets.most_common(20)]
