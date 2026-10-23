@@ -55,6 +55,19 @@ Open <http://127.0.0.1:8862>.
 | `PHP2SHELL_LOG` | `data/usage.log.jsonl` | Usage log path; `off` disables it |
 | `PHP2SHELL_LOG_HASH_IP` | – | `1` pseudonymizes client IPs (daily-salted SHA-256) |
 | `PHP2SHELL_STATUS_TOKEN` | – | If set, `/status` and `/api/stats` require this token |
+| `PHP2SHELL_RECHECK` | – (off) | `1` enables the scheduled re-check (see below) — **off by default** |
+| `PHP2SHELL_RECHECK_HOURS` | `6` | Re-check interval in hours |
+
+## Scheduled re-check (opt-in)
+
+With `PHP2SHELL_RECHECK=1`, a background task re-scans **only the targets that have had a finding**
+every `PHP2SHELL_RECHECK_HOURS` hours (extended mode) and tracks where the finding disappears. A target
+whose finding is gone is marked **fixed** and **is not scanned again**. The `/status` page then shows a
+"Fixed (gone)" tile and a re-check section (fixed targets with date and the CVEs that disappeared, plus
+the still-vulnerable watched targets). State is kept in `data/recheck.json`.
+
+**Off by default on purpose:** the public build does not auto-scan third parties. Enable it only for
+targets you are authorized to monitor; the re-check honours the same GET-only, SSRF-guarded probing.
 
 ## License
 
