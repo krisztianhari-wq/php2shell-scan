@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.4 — 2026-10-23
+- Status page: shows re-scanned findings. Pre-0.2.0 extended hits (where the exact CVE wasn't logged)
+  were re-scanned; the matched CVEs are now in the log, marked ⟳ (with date tooltip). Entries that are
+  no longer vulnerable show "re-scanned: no finding anymore".
+
 ## 0.2.3 — 2026-10-23
 - Status page: back-fill the CVE for pre-0.2.0 log entries that predate per-finding CVE logging.
   In default (non-extended) mode only the php2shell pair can match, so a non-extended critical hit
