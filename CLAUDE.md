@@ -21,6 +21,11 @@ személyes név/e-mail, belső céges információ vagy konkrét (harmadik fél)
 - `app/auditlog.py` – háttér használati napló (JSONL): ts, kliens-IP, célpont, extended, találatszám, sev.
   `PHP2SHELL_LOG` útvonal (`off`→nincs), `PHP2SHELL_LOG_HASH_IP=1`→napi sós SHA-256. Gitignore (`data/`).
 - `app/stats.py` – a napló tail-összegzése a status oldalhoz (top célpont/IP, találatos arány, legutóbbiak).
+  A v0.2.0 előtti, CVE nélküli találatokat olvasáskor kiegészíti (nem-extended kritikus → php2shell, ≈).
+- `app/recheck.py` – **opt-in** (`PHP2SHELL_RECHECK=1`) 6 óránkénti újraellenőrzés: a valaha TALÁLATOS
+  célpontokat újraszkenneli (extended), ahol a találat eltűnt → `fixed`, onnantól NEM szkenneli újra.
+  Állapot: `data/recheck.json`; háttér-task a FastAPI `lifespan`-ben; a `/api/stats` `recheck` kulcsa adja
+  az összesítőt (watched/fixed + listák). Alapból KI (a publikus kód nem szkennel automatikusan harmadik felet).
 - `app/static/` – sadrobot UI, HU/EN (`i18n.js`), light/dark (`theme.js`). `index.html` fő oldal,
   `status.html`+`status.js` státusz. A `/` route behelyettesíti a `__VER__`-t (asset-URL verziózás).
 
