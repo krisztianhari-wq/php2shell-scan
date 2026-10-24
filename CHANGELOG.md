@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.5.1 — 2026-10-24
+- Docs: note CVE-2026-115560 (PHP session.upload_progress RCE, disclosed 2026-10-23). It affects even
+  fully patched PHP and is config/runtime-dependent, so it is NOT version-detectable and the scanner
+  does not flag it. Added to the scanner page's limits + local-verification guide (HU/EN) and the
+  README, with the mitigation (`session.upload_progress.enabled=0`). No scanner logic change.
+
 ## 0.5.0 — 2026-10-23
 - Re-check: configurable interval in minutes (`PHP2SHELL_RECHECK_MINUTES`, default 60; the old
   `PHP2SHELL_RECHECK_HOURS` still works) — re-checks more often than the previous fixed 6h.

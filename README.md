@@ -25,6 +25,12 @@ fix, or sit behind a WAF. Treat every result as a lead to verify, not a confirma
 Findings are bilingual (HU/EN) and tagged by method: `version` (from headers) or `fingerprint`
 (lightweight GET of the home page).
 
+> **Not everything is version-detectable.** Some PHP RCEs cannot be found this way and are **not
+> flagged** by this tool. For example **CVE-2026-115560** (PHP `session.upload_progress`, disclosed
+> 2026-10-23) affects even fully patched PHP and depends on runtime/config (the serialize handler
+> switched via `ini_set()` before `session_start()`), so it is invisible from the version or a single
+> GET. Mitigate until the fix ships: `session.upload_progress.enabled=0`; verify on the host.
+
 ## Safety
 
 - **GET only, no redirects, size- and time-limited** requests.
